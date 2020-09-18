@@ -1,0 +1,16 @@
+{"message":"url must start with http","level":"error"}
+{"message":"title is required","level":"error"}
+{"message":"url is required","level":"error"}
+{"message":"url must start with http","level":"error"}
+{"message":"rating is required","level":"error"}
+{"message":"rating must be a number","level":"error"}
+{"message":"rating must be a number","level":"error"}
+{"message":"rating must be a number","level":"error"}
+{"message":"rating is required","level":"error"}
+{"message":"rating is required","level":"error"}
+{"message":"rating is required","level":"error"}
+{"message":"rating is required","level":"error"}
+{"message":"rating is required","level":"error"}
+{"message":"rating must be a number","level":"error"}
+{"message":"rating must be between 1 and 5","level":"error"}
+{"message":"rating must be between 1 and 5","level":"error"}

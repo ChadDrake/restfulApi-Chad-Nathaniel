@@ -4,11 +4,14 @@ const morgan = require("morgan");
 const cors = require("cors");
 const helmet = require("helmet");
 const { NODE_ENV } = require("./config");
+const bookmarkRouter = require("./bookmarks");
+const validateApi = require("./validateApi");
 
 const app = express();
 
 const morganOption = NODE_ENV === "production" ? "tiny" : "common";
 
+app.use("/bookmarks", validateApi, bookmarkRouter);
 app.use(express.json());
 app.use(morgan(morganOption));
 app.use(helmet());
@@ -22,10 +25,6 @@ app.use(function errorHandler(error, req, res, next) {
     response = { message: error.message, error };
   }
   res.status(500).json(response);
-});
-
-app.get("/", (req, res) => {
-  res.send("Hello, world!");
 });
 
 module.exports = app;
