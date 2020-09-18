@@ -56,4 +56,32 @@ bookmarkRouter
       .json({ id: id });
   });
 
+  bookmarkRouter
+  .route("/:bookmarkId")
+  .get((req, res) => {
+    let { bookmarkId } = req.params; 
+   const index = bookmarks.findIndex(b => b.id === bookmarkId);
+    if (index === -1) {
+      return res
+        .status(404)
+        .send('Bookmark not found');
+    }
+    res.json(bookmarks[index]);
+  })
+  .delete((req, res) => {
+  let { bookmarkId } = req.params; 
+  const index = bookmarks.findIndex(b => b.id === bookmarkId);
+   if (index === -1) {
+     return res
+       .status(404)
+       .send('Bookmark not found');
+   }
+   bookmarks.splice(index, 1);
+
+   res.status(204).end();
+   
+   
+  });
+
+  
 module.exports = bookmarkRouter;
