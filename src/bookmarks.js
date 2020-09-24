@@ -6,13 +6,14 @@ const { v4: uuid } = require("uuid");
 const { readableHighWaterMark } = require("./logger");
 bookmarkRouter.use(express.json());
 const bookmarkSerivice = require("./bookmarks-service");
+const xss = require("xss");
 
 const bookmarksService = require("./bookmarks-service");
 const convertBookmarks = (bookmark) => ({
   id: bookmark.id,
-  title: bookmark.title,
-  url: bookmark.url,
-  description: bookmark.description,
+  title: xss(bookmark.title),
+  url: xss(bookmark.url),
+  description: xss(bookmark.description),
   rating: Number(bookmark.rating),
 });
 
@@ -57,19 +58,21 @@ bookmarkRouter
       logger.error("rating must be between 1 and 5");
       return res.status(400).send("rating must be between 1 and 5");
     }
-    const id = uuid();
+
     let newBookmark = {
-      id,
       title,
       url,
       description,
       rating,
     };
-    bookmarks.push(newBookmark);
-    res
-      .status(201)
-      .location(`http://localhost:8000/bookmarks/${id}`)
-      .json({ id: id });
+    bookmarkSerivice
+      .insertBookmark(req.app.get("db"), newBookmark)
+      .then((bookmark) => {
+        res
+          .status(201)
+          .location(`http://localhost:8000/bookmarks/${bookmark.id}`)
+          .json({ id: bookmark.id });
+      });
   });
 
 bookmarkRouter
