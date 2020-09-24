@@ -4,10 +4,10 @@ const { PORT } = require("./config");
 
 const db = knex({
   client: "pg",
-  connection: DB_URL,
+  connection: process.env.DB_URL,
 });
 
-app.get("db", db);
+app.set("db", db);
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);

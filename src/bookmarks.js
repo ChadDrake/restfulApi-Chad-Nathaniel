@@ -3,12 +3,28 @@ const bookmarks = require("./dataStore");
 const bookmarkRouter = express.Router();
 const logger = require("./logger");
 const { v4: uuid } = require("uuid");
+const { readableHighWaterMark } = require("./logger");
 bookmarkRouter.use(express.json());
+const bookmarkSerivice = require("./bookmarks-service");
+
+const bookmarksService = require("./bookmarks-service");
+const convertBookmarks = (bookmark) => ({
+  id: bookmark.id,
+  title: bookmark.title,
+  url: bookmark.url,
+  description: bookmark.description,
+  rating: Number(bookmark.rating),
+});
 
 bookmarkRouter
   .route("/")
-  .get((req, res) => {
-    res.json(bookmarks);
+  .get((req, res, next) => {
+    bookmarksService
+      .getAllBookmarks(req.app.get("db"))
+      .then((bookmarks) => {
+        res.json(bookmarks.map(convertBookmarks));
+      })
+      .catch(next);
   })
   .post((req, res) => {
     let { title, url, description, rating } = req.body;
@@ -56,32 +72,30 @@ bookmarkRouter
       .json({ id: id });
   });
 
-  bookmarkRouter
+bookmarkRouter
   .route("/:bookmarkId")
-  .get((req, res) => {
-    let { bookmarkId } = req.params; 
-   const index = bookmarks.findIndex(b => b.id === bookmarkId);
-    if (index === -1) {
-      return res
-        .status(404)
-        .send('Bookmark not found');
-    }
-    res.json(bookmarks[index]);
+  .get((req, res, next) => {
+    let { bookmarkId } = req.params;
+
+    bookmarkSerivice
+      .getBookmarkById(req.app.get("db"), bookmarkId)
+      .then((bookmark) => {
+        if (!bookmark) {
+          return res.status(404).send("Bookmark not found");
+        }
+        res.json(convertBookmarks(bookmark));
+      })
+      .catch(next);
   })
   .delete((req, res) => {
-  let { bookmarkId } = req.params; 
-  const index = bookmarks.findIndex(b => b.id === bookmarkId);
-   if (index === -1) {
-     return res
-       .status(404)
-       .send('Bookmark not found');
-   }
-   bookmarks.splice(index, 1);
+    let { bookmarkId } = req.params;
+    const index = bookmarks.findIndex((b) => b.id === bookmarkId);
+    if (index === -1) {
+      return res.status(404).send("Bookmark not found");
+    }
+    bookmarks.splice(index, 1);
 
-   res.status(204).end();
-   
-   
+    res.status(204).end();
   });
 
-  
 module.exports = bookmarkRouter;

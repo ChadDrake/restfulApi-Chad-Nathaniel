@@ -1,8 +1,12 @@
 const bookmarks = require("./dataStore");
-
 const bookmarksService = {
-  getAllbookmarks(db) {
+  getAllBookmarks(db) {
     return db.select("*").from("bookmarks");
+  },
+
+  getBookmarkById(db, id) {
+    console.log(id);
+    return db("bookmarks").select("*").where("id", id).first();
   },
 };
 
