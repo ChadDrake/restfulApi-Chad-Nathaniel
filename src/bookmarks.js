@@ -100,6 +100,20 @@ bookmarkRouter
         }
         res.status(204).end();
       });
-  });
+  })
+  .patch((req, res, next) => {
+    let { bookmarkId } = req.params;
+    const { title, url, description, rating } = req.body;
+    const newData = { title, url, description, rating }
+    bookmarkSerivice
+      .patchBookmark(req.app.get('db'), bookmarkId, newData)
+      .then((bookmark) => {
+        if (!bookmark) {
+          return res.status(404).send("Bookmark not found");
+        }
+        res.status(204).end();
+      })
+      .catch(next)
+  })
 
 module.exports = bookmarkRouter;

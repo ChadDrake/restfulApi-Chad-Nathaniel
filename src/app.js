@@ -11,7 +11,7 @@ const app = express();
 
 const morganOption = NODE_ENV === "production" ? "tiny" : "common";
 
-app.use("/bookmarks", validateApi, bookmarkRouter);
+app.use("/api/bookmarks", validateApi, bookmarkRouter);
 app.use(express.json());
 app.use(morgan(morganOption));
 app.use(helmet());

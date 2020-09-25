@@ -16,7 +16,7 @@ describe("bookmarks endpoint", () => {
   after(() => {
     db.destroy();
   });
-  describe("/bookmarks", () => {
+  describe("/api/bookmarks", () => {
     context("App has data", () => {
       const testData = testFixtures.makeBookmarksArray();
       beforeEach(() => {
@@ -28,7 +28,7 @@ describe("bookmarks endpoint", () => {
       describe("get all", () => {
         it("should return a 200, and array of bookmarks", () => {
           return supertest(app)
-            .get("/bookmarks")
+            .get("/api/bookmarks")
             .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
             .expect(200, testData);
         });
@@ -41,17 +41,18 @@ describe("bookmarks endpoint", () => {
       describe("get all", () => {
         it("should return an empty array", () => {
           return supertest(app)
-            .get("/bookmarks")
+            .get("/api/bookmarks")
             .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
             .expect(200, []);
         });
       });
+
     });
     describe("/post", () => {
       describe("insert new", () => {
         it("should return 201, and a bookmark", () => {
           return supertest(app)
-            .post("/bookmarks")
+            .post("/api/bookmarks")
             .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
             .send({
               title: "Reddit",
@@ -60,7 +61,7 @@ describe("bookmarks endpoint", () => {
               rating: 5,
             })
             .then((res) => {
-              supertest(app).get(`/bookmarks/${res.body.id}`).expect(res.body);
+              supertest(app).get(`/api/bookmarks/${res.body.id}`).expect(res.body);
             });
         });
         const requiredFields = ["title", "url", "rating"];
@@ -73,7 +74,7 @@ describe("bookmarks endpoint", () => {
           it(`should return 400 if invalid ${field}`, () => {
             delete newBookmark[field];
             return supertest(app)
-              .post("/bookmarks")
+              .post("/api/bookmarks")
               .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
               .send({
                 title: "Reddit",
@@ -86,7 +87,7 @@ describe("bookmarks endpoint", () => {
       });
     });
   });
-  describe("/bookmarks/:id", () => {
+  describe("/api/bookmarks/:id", () => {
     before(() => {
       return db("bookmarks").truncate();
     });
@@ -103,7 +104,7 @@ describe("bookmarks endpoint", () => {
         const bookmarkTestObject = testData[bookmarkId - 1];
         it("should return the given bookmark by id", () => {
           return supertest(app)
-            .get(`/bookmarks/${bookmarkId}`)
+            .get(`/api/bookmarks/${bookmarkId}`)
             .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
             .expect(200, bookmarkTestObject);
         });
@@ -115,12 +116,12 @@ describe("bookmarks endpoint", () => {
         );
         it("should delete bookmark", () => {
           return supertest(app)
-            .delete(`/bookmarks/${bookmarkId}`)
+            .delete(`/api/bookmarks/${bookmarkId}`)
             .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
             .expect(204)
             .then((res) => {
               return supertest(app)
-                .get("/bookmarks")
+                .get("/api/bookmarks")
                 .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
                 .expect(expectedBookmarks);
             });
@@ -140,7 +141,7 @@ describe("bookmarks endpoint", () => {
         });
         it("removes xss attack content", () => {
           return supertest(app)
-            .get(`/bookmarks/${maliciousBookmark.id}`)
+            .get(`/api/bookmarks/${maliciousBookmark.id}`)
             .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
             .expect(200)
             .expect((res) => {
@@ -156,19 +157,48 @@ describe("bookmarks endpoint", () => {
             });
         });
       });
-    });
-    context("App has no data", () => {
-      before(() => {
-        return db("bookmarks").truncate();
-      });
-      describe("Get by id", () => {
-        const bookmarkId = 3;
-        it("should return a 404", () => {
+      describe('/patch', () => {
+        it(`responds with 204 and updates obj`, () => {
+          const bookmarkId = 1;
           return supertest(app)
-            .get(`/bookmarks/${bookmarkId}`)
+            .patch(`/api/bookmarks/${bookmarkId}`)
             .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
-            .expect(404);
+            .send({ title: 'fun times' })
+            .expect(204)
+            .then(result => {
+              return supertest(app)
+                .get(`/api/bookmarks/${bookmarkId}`)
+                .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
+                .then(x => {
+                  expect(x.body.title).to.eql('fun times')
+                  expect(x.body.url).to.exist
+                })
+            })
+        })
+      });
+      context("App has no data", () => {
+        beforeEach(() => {
+          return db("bookmarks").truncate();
         });
+        describe("Get by id", () => {
+          const bookmarkId = 3;
+          it("should return a 404", () => {
+            return supertest(app)
+              .get(`/api/bookmarks/${bookmarkId}`)
+              .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
+              .expect(404);
+          });
+        });
+        describe('/patch', () => {
+          it(`responds with 404`, () => {
+            const bookmarkId = 123454
+            return supertest(app)
+              .patch(`/api/bookmarks/${bookmarkId}`)
+              .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
+              .send({ title: 'fun times' })
+              .expect(404)
+          })
+        })
       });
     });
   });

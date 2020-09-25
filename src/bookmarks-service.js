@@ -19,6 +19,12 @@ const bookmarksService = {
   deleteBookmark(db, id) {
     return db("bookmarks").where("id", id).delete();
   },
+  
+  patchBookmark(db, id, newData){
+    return db('bookmarks')
+      .where('id', id)
+      .update(newData)
+  }
 };
 
 module.exports = bookmarksService;
