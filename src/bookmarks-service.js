@@ -5,7 +5,6 @@ const bookmarksService = {
   },
 
   getBookmarkById(db, id) {
-    console.log(id);
     return db("bookmarks").select("*").where("id", id).first();
   },
   insertBookmark(db, newBookmark) {
@@ -15,6 +14,10 @@ const bookmarksService = {
       .then((bookmark) => {
         return bookmark[0];
       });
+  },
+
+  deleteBookmark(db, id) {
+    return db("bookmarks").where("id", id).delete();
   },
 };
 

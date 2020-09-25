@@ -92,13 +92,14 @@ bookmarkRouter
   })
   .delete((req, res) => {
     let { bookmarkId } = req.params;
-    const index = bookmarks.findIndex((b) => b.id === bookmarkId);
-    if (index === -1) {
-      return res.status(404).send("Bookmark not found");
-    }
-    bookmarks.splice(index, 1);
-
-    res.status(204).end();
+    bookmarkSerivice
+      .deleteBookmark(req.app.get("db"), bookmarkId)
+      .then((bookmark) => {
+        if (!bookmark) {
+          return res.status(404).send("Bookmark not found");
+        }
+        res.status(204).end();
+      });
   });
 
 module.exports = bookmarkRouter;
